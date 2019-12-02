@@ -12,7 +12,7 @@ from config import PORT, SLAVE_ADDRESS, BAUDRATE, MAX485_DERE, INFLUXDB_URL, INF
 def retry_decorator(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        retry_count = 50
+        retry_count = 160
         result = None
 
         while result == None and retry_count > 0:
