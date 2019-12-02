@@ -16,6 +16,7 @@ def retry_decorator(func):
         result = None
 
         while result == None and retry_count > 0:
+            print('.', end ="")
             try:
                 result = func(*args, **kwargs)
             except Exception as err:
@@ -23,6 +24,7 @@ def retry_decorator(func):
                 retry_count -= 1
                 if retry_count == 0:
                     print("Error: {0}".format(err))
+        print()
         return result
     return wrapper
 
