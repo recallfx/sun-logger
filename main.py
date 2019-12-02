@@ -86,7 +86,7 @@ class SunLogger:
 
     @retry_decorator
     def get_model(self):
-        return self.instrument.read_string(30000, 15)
+        return str(self.instrument.read_string(30000, 15))
 
     @retry_decorator
     def get_model_id(self):
@@ -216,7 +216,7 @@ class SunLogger:
         self.model_id = self.get_model_id()
         print(f'Model ID: {self.model_id}')
 
-        self.model = self.get_model()
+        self.model = self.get_model().rstrip('\x00')
         print(f'Model: {self.model}')
 
         self.pv_string_count = self.get_pv_strings_number()

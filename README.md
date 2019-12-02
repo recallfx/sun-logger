@@ -25,10 +25,12 @@ network={
 6. Ensure line `enable_uart=1` (and `core_freq=250`?) is in file `boot/config.txt`;
 7. Ensure `console=serial0,115200` is not present in file `/boot/cmdline.txt`;
 8. Release GPIOs 14 and 15 by running `sudo systemctl disable hciuart`;
-9. Install python PIP: `sudo apt-get install python-pip`
+9. Install python dependencies: `sudo apt-get install python-pip python3-numpy`
 10. Restart: `sudo reboot`;
 
 [More info on UART](https://www.raspberrypi.org/documentation/configuration/uart.md)
+
+This list is not final as I have not tested on fresh install.
 
 # References
 
