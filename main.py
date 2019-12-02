@@ -20,7 +20,7 @@ def retry_decorator(func):
                 result = func(*args, **kwargs)
             except Exception as err:
                 print('.', end ="")
-                # time.sleep(0.3)
+                time.sleep(0.05)
                 retry_count -= 1
                 if retry_count == 0:
                     print("Error: {0}".format(err))
