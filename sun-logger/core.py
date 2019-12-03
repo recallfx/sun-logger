@@ -25,7 +25,7 @@ def retry_decorator(func):
                 error_count += 1
                 retry_count -= 1
                 if retry_count == 0:
-                    print(f'Error: {err}')
+                    print('Last exception message: {}'.format(err))
                     error_rate = int(error_count/total_count*100)
                     print(f'Error rate: {error_rate}%')
         return result
@@ -44,7 +44,13 @@ class InfluxLogger:
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
     def write(self, data):
-        self.write_api.write(bucket=self.bucket_id, org=self.org, record=data)
+        try:
+            line_protocol = data.to_line_protocol()
+
+            print(f'Line: {line_protocol}')
+            self.write_api.write(bucket=self.bucket_id, org=self.org, record=line_protocol)
+        except Exception as err:
+            print('Influx exception: {}'.format(err))
 
 
 class SunLogger:
@@ -185,14 +191,10 @@ class SunLogger:
     def log_device(self, **kwargs):
         p = self._format_line('device', kwargs)
 
-        print(p.to_line_protocol())
-
         self.influx_logger.write(p)
 
     def log_electricity(self, **kwargs):
         p = self._format_line('electricity', kwargs)
-
-        print(p.to_line_protocol())
 
         self.influx_logger.write(p)
 
