@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from time import sleep
-import datetime
+from datetime import datetime
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 import minimalmodbus
