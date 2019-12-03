@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import time
+from time import sleep
 import datetime
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -25,6 +25,7 @@ def retry_decorator(func):
             except Exception as err:
                 error_count += 1
                 retry_count -= 1
+                sleep(0.1)
                 if retry_count == 0:
                     print('Last exception message: {}'.format(err))
                     error_rate = int(error_count/total_count*100)
