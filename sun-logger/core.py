@@ -2,25 +2,32 @@
 
 import time
 from influxdb_client import InfluxDBClient, Point
-from influxdb_client.client.write_api import ASYNCHRONOUS
+from influxdb_client.client.write_api import SYNCHRONOUS
 import minimalmodbus
 import functools
+
+total_count = 0
+error_count = 0
 
 def retry_decorator(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
+        global total_count
+        global error_count
         retry_count = 160
         result = None
 
+        total_count += 1
         while result == None and retry_count > 0:
             try:
                 result = func(*args, **kwargs)
             except Exception as err:
-                print('.', end="")
-                time.sleep(0.05)
+                error_count += 1
                 retry_count -= 1
                 if retry_count == 0:
-                    print("Error: {0}".format(err))
+                    print(f'Error: {err}')
+                    print(f'Error rate: {error_count/total_count*100}%')
+                    
         print()
         return result
     return wrapper
@@ -35,10 +42,10 @@ class InfluxLogger:
         self.client = InfluxDBClient(
             url=self.url, token=self.token, org=self.org)
 
-        self.write_api = self.client.write_api(write_options=ASYNCHRONOUS)
+        self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
 
     def write(self, data):
-        self.write_api.write(self.bucket_id, self.org, data)
+        self.write_api.write(bucket=self.bucket_id, org=self.org, record=data)
 
 
 class SunLogger:
@@ -169,10 +176,12 @@ class SunLogger:
         return self.instrument.read_register(32089)
 
     def _format_line(self, measurement, data):
-        fields = ','.join("{!s}={!r}".format(key, val)
-                          for (key, val) in data.items())
+        p = Point(measurement).tag('location', 'lt').time(int(time.time()))
 
-        return f'{measurement},location=lt {fields} {int(time.time())}'
+        for (key, val) in data.items():
+            p.field(key, val)
+
+        return p
 
     def log_device(self, **kwargs):
         line = self._format_line('device', kwargs)
