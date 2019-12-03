@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import datetime
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 import minimalmodbus
@@ -181,7 +182,7 @@ class SunLogger:
         return self.instrument.read_register(32089)
 
     def _format_line(self, measurement, data):
-        p = Point(measurement).tag('location', 'lt').time(time.time())
+        p = Point(measurement).tag('location', 'lt').time(time=datetime.utcnow())
 
         for (key, val) in data.items():
             p.field(key, val)
