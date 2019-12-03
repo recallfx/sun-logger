@@ -4,10 +4,9 @@ import time
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import ASYNCHRONOUS
 import minimalmodbus
-import RPi.GPIO as GPIO
 import functools
 
-from config import PORT, SLAVE_ADDRESS, BAUDRATE, MAX485_DERE, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUX_BUCKET_ID, INFLUX_ORG
+from config import PORT, SLAVE_ADDRESS, BAUDRATE, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUX_BUCKET_ID, INFLUX_ORG
 
 def retry_decorator(func):
     @functools.wraps(func)
@@ -43,48 +42,23 @@ class InfluxLogger:
 
 
 class SunLogger:
-    def __init__(self, influx_logger, port, slave_address = 1, baudrate = 9600, ts_pin = None, gpio = GPIO):
+    def __init__(self, influx_logger, port, slave_address = 1, baudrate = 9600):
         self.influx_logger = influx_logger
         self.port = port
         self.slave_address = slave_address
         self.baudrate = baudrate
-        self.ts_pin = ts_pin
-        self.gpio = gpio
-
-        if (gpio != None):
-            self.setup_gpio()
 
         self.setup_modbus()
 
-    def setup_gpio(self):
-        self.gpio.setwarnings(False)
-
-        self.gpio.setmode(GPIO.BOARD)
-        self.gpio.setup(self.ts_pin, GPIO.OUT, initial=GPIO.LOW)
-
-    def before_tx_callback(self):
-        if (self.ts_pin != None):
-            self.gpio.output(self.ts_pin, GPIO.HIGH)
-            time.sleep(0.1)
-
-    def after_tx_callback(self):
-        if (self.ts_pin != None):
-            self.gpio.output(self.ts_pin, GPIO.LOW)
-
     def setup_modbus(self):
-        self.instrument = minimalmodbus.Instrument(
-            self.port,
-            self.slave_address,
-            cb1=self.before_tx_callback,
-            cb2=self.after_tx_callback
-        )
+        self.instrument = minimalmodbus.Instrument(self.port, self.slave_address)
 
-        #self.instrument.debug = True
+        # self.instrument.debug = True
         self.instrument.serial.baudrate = self.baudrate
         self.instrument.serial.timeout = 0.2
         #self.instrument.handle_local_echo = True
         #self.instrument.close_port_after_each_call = False
-        #self.instrument.precalculate_read_size = True
+        # self.instrument.precalculate_read_size = True
 
     @retry_decorator
     def get_model(self):
@@ -289,7 +263,7 @@ class SunLogger:
 
 if __name__ == '__main__':
     influx_logger = InfluxLogger(INFLUXDB_URL, INFLUXDB_TOKEN, INFLUX_ORG, INFLUX_BUCKET_ID)
-    sun_logger = SunLogger(influx_logger, PORT, SLAVE_ADDRESS, BAUDRATE, MAX485_DERE)
+    sun_logger = SunLogger(influx_logger, PORT, SLAVE_ADDRESS, BAUDRATE)
 
     try:
         sun_logger.run()
