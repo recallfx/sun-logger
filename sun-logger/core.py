@@ -26,7 +26,8 @@ def retry_decorator(func):
                 retry_count -= 1
                 if retry_count == 0:
                     print(f'Error: {err}')
-                    print(f'Error rate: {int(error_count/total_count*100)}%')
+                    error_rate = int(error_count/total_count*100)
+                    print(f'Error rate: {error_rate}%')
         return result
     return wrapper
 
