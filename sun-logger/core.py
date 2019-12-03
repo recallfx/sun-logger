@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import atexit
 from time import sleep
 from datetime import datetime
 from influxdb_client import InfluxDBClient, Point
@@ -9,6 +10,15 @@ import functools
 
 total_count = 0
 error_count = 0
+
+def on_exit(db_client: InfluxDBClient, write_api: WriteApi):
+    """Close clients after terminate a script.
+    :param db_client: InfluxDB client
+    :param write_api: WriteApi
+    :return: nothing
+    """
+    write_api.__del__()
+    db_client.__del__()
 
 def retry_decorator(func):
     @functools.wraps(func)
@@ -44,6 +54,12 @@ class InfluxLogger:
             url=self.url, token=self.token, org=self.org)
 
         self.write_api = self.client.write_api(write_options=SYNCHRONOUS)
+
+        atexit.register(self.on_exit, self.client, self.write_api)
+
+    def on_exit(self, db_client: InfluxDBClient, write_api: WriteApi):
+        write_api.__del__()
+        db_client.__del__()
 
     def write(self, data):
         try:
@@ -232,7 +248,7 @@ class SunLogger:
                 self.device_status_code = device_status_code
                 self.device_status_string = device_status_string
 
-                print(f'Device status: {self.device_status_string}')
+                print(f'Device status: {self.device_status_code} {self.device_status_string}')
 
             if (self.internal_temp != internal_temp):
                 self.internal_temp = internal_temp
