@@ -181,9 +181,10 @@ class SunLogger:
             0x0700: 'AFCI self check',
             0x0800: 'I-V scanning',
             0x0900: 'DC input detection',
-            0x0A00: 'Running: off-grid charging',
-            0xA000: 'Standby: no irradiation'
+            0x0a00: 'Running: off-grid charging',
+            0xa000: 'Standby: no irradiation'
         }
+
         return switcher.get(status, "Invalid status")
 
     @retry_decorator
