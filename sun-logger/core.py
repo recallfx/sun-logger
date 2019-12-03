@@ -6,8 +6,6 @@ from influxdb_client.client.write_api import ASYNCHRONOUS
 import minimalmodbus
 import functools
 
-from config import PORT, SLAVE_ADDRESS, BAUDRATE, INFLUXDB_URL, INFLUXDB_TOKEN, INFLUX_BUCKET_ID, INFLUX_ORG
-
 def retry_decorator(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -18,7 +16,7 @@ def retry_decorator(func):
             try:
                 result = func(*args, **kwargs)
             except Exception as err:
-                print('.', end ="")
+                print('.', end="")
                 time.sleep(0.05)
                 retry_count -= 1
                 if retry_count == 0:
@@ -27,13 +25,15 @@ def retry_decorator(func):
         return result
     return wrapper
 
+
 class InfluxLogger:
     def __init__(self, url, token, org, bucket_id='sun2000'):
         self.url = url
         self.token = token
         self.org = org
         self.bucket_id = bucket_id
-        self.client = InfluxDBClient(url=self.url, token=self.token, org=self.org)
+        self.client = InfluxDBClient(
+            url=self.url, token=self.token, org=self.org)
 
         self.write_api = self.client.write_api(write_options=ASYNCHRONOUS)
 
@@ -42,7 +42,7 @@ class InfluxLogger:
 
 
 class SunLogger:
-    def __init__(self, influx_logger, port, slave_address = 1, baudrate = 9600):
+    def __init__(self, influx_logger, port, slave_address=1, baudrate=9600):
         self.influx_logger = influx_logger
         self.port = port
         self.slave_address = slave_address
@@ -51,7 +51,8 @@ class SunLogger:
         self.setup_modbus()
 
     def setup_modbus(self):
-        self.instrument = minimalmodbus.Instrument(self.port, self.slave_address)
+        self.instrument = minimalmodbus.Instrument(
+            self.port, self.slave_address)
 
         # self.instrument.debug = True
         self.instrument.serial.baudrate = self.baudrate
@@ -130,37 +131,37 @@ class SunLogger:
 
     def get_device_status_string(self, status):
         switcher = {
-                0x0000: 'Standby: initializing',
-                0x0001: 'Standby: detecting insulation resistance',
-                0x0002: 'Standby: detecting irradiation',
-                0x0003: 'Standby: drid detecting',
-                0x0100: 'Starting',
-                0x0200: 'On-grid (Off-grid mode: running)',
-                0x0201: 'Grid connection: power limited (Off-grid mode: running: power limited)',
-                0x0202: 'Grid connection: self-derating (Off-grid mode: running: self-derating)',
-                0x0300: 'Shutdown: fault',
-                0x0301: 'Shutdown: command',
-                0x0302: 'Shutdown: OVGR',
-                0x0303: 'Shutdown: communication disconnected',
-                0x0304: 'Shutdown: power limited',
-                0x0305: 'Shutdown: manual startup required',
-                0x0306: 'Shutdown: DC switches disconnected',
-                0x0307: 'Shutdown: rapid cutoff',
-                0x0308: 'Shutdown: input underpower',
-                0x0401: 'Grid scheduling: cos F-P curve',
-                0x0402: 'Grid scheduling: Q-U curve',
-                0x0403: 'Grid scheduling: PF-U curve',
-                0x0404: 'Grid scheduling: dry contact',
-                0x0405: 'Grid scheduling: Q-P curve',
-                0x0500: 'Spot-check ready',
-                0x0501: 'Spot-checking',
-                0x0600: 'Inspecting',
-                0x0700: 'AFCI self check',
-                0x0800: 'I-V scanning',
-                0x0900: 'DC input detection',
-                0x0A00: 'Running: off-grid charging',
-                0xA000: 'Standby: no irradiation'
-            }
+            0x0000: 'Standby: initializing',
+            0x0001: 'Standby: detecting insulation resistance',
+            0x0002: 'Standby: detecting irradiation',
+            0x0003: 'Standby: drid detecting',
+            0x0100: 'Starting',
+            0x0200: 'On-grid (Off-grid mode: running)',
+            0x0201: 'Grid connection: power limited (Off-grid mode: running: power limited)',
+            0x0202: 'Grid connection: self-derating (Off-grid mode: running: self-derating)',
+            0x0300: 'Shutdown: fault',
+            0x0301: 'Shutdown: command',
+            0x0302: 'Shutdown: OVGR',
+            0x0303: 'Shutdown: communication disconnected',
+            0x0304: 'Shutdown: power limited',
+            0x0305: 'Shutdown: manual startup required',
+            0x0306: 'Shutdown: DC switches disconnected',
+            0x0307: 'Shutdown: rapid cutoff',
+            0x0308: 'Shutdown: input underpower',
+            0x0401: 'Grid scheduling: cos F-P curve',
+            0x0402: 'Grid scheduling: Q-U curve',
+            0x0403: 'Grid scheduling: PF-U curve',
+            0x0404: 'Grid scheduling: dry contact',
+            0x0405: 'Grid scheduling: Q-P curve',
+            0x0500: 'Spot-check ready',
+            0x0501: 'Spot-checking',
+            0x0600: 'Inspecting',
+            0x0700: 'AFCI self check',
+            0x0800: 'I-V scanning',
+            0x0900: 'DC input detection',
+            0x0A00: 'Running: off-grid charging',
+            0xA000: 'Standby: no irradiation'
+        }
         return switcher.get(status, "Invalid status")
 
     @retry_decorator
@@ -168,7 +169,8 @@ class SunLogger:
         return self.instrument.read_register(32089)
 
     def _format_line(self, measurement, data):
-        fields = ','.join("{!s}={!r}".format(key,val) for (key,val) in data.items())
+        fields = ','.join("{!s}={!r}".format(key, val)
+                          for (key, val) in data.items())
 
         return f'{measurement},location=lt {fields} {int(time.time())}'
 
@@ -210,7 +212,8 @@ class SunLogger:
 
         while True:
             device_status_code = self.get_device_status()
-            device_status_string = self.get_device_status_string(self.device_status_code)
+            device_status_string = self.get_device_status_string(
+                self.device_status_code)
             internal_temp = self.get_internal_temp()
 
             if (self.device_status_code != device_status_code):
@@ -227,8 +230,10 @@ class SunLogger:
             pv = {}
 
             for pv_string_no in range(self.pv_string_count):
-                pv[f'pv{pv_string_no}_voltage'] = self.get_pv_voltage(pv_string_no + 1)
-                pv[f'pv{pv_string_no}_current'] = self.get_pv_current(pv_string_no + 1)
+                pv[f'pv{pv_string_no}_voltage'] = self.get_pv_voltage(
+                    pv_string_no + 1)
+                pv[f'pv{pv_string_no}_current'] = self.get_pv_current(
+                    pv_string_no + 1)
 
             phase_a_voltage = self.get_phase_a_voltage()
             phase_b_voltage = self.get_phase_b_voltage()
@@ -244,7 +249,7 @@ class SunLogger:
             efficiency = self.get_efficiency()
 
             self.log_electricity(
-                **pv, 
+                **pv,
                 phase_a_voltage=phase_a_voltage,
                 phase_a_current=phase_a_current,
                 phase_b_voltage=phase_b_voltage,
@@ -260,13 +265,3 @@ class SunLogger:
                 status_code=self.device_status_code,
                 status_string=self.device_status_string
             )
-
-if __name__ == '__main__':
-    influx_logger = InfluxLogger(INFLUXDB_URL, INFLUXDB_TOKEN, INFLUX_ORG, INFLUX_BUCKET_ID)
-    sun_logger = SunLogger(influx_logger, PORT, SLAVE_ADDRESS, BAUDRATE)
-
-    try:
-        sun_logger.run()
-    except Exception as err:
-        print(f'Error: {err}')
-

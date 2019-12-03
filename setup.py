@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
@@ -9,6 +9,6 @@ setup(
    description='SUN2000 inverter logger',
    author='Marius Bieliauskas',
    author_email='mbieliau@gmail.com',
-   packages=['sun-logger'],
+   packages=find_packages(),
    install_requires=requirements,
 )
