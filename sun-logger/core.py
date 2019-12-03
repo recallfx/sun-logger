@@ -233,8 +233,7 @@ class SunLogger:
 
         while True:
             device_status_code = self.get_device_status()
-            device_status_string = self.get_device_status_string(
-                self.device_status_code)
+            device_status_string = self.get_device_status_string(device_status_code)
             internal_temp = self.get_internal_temp()
                 
             if (self.device_status_code != device_status_code):
