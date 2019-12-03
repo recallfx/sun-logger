@@ -5,18 +5,14 @@ from time import sleep
 from datetime import datetime
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
+
 import minimalmodbus
 import functools
 
 total_count = 0
 error_count = 0
 
-def on_exit(db_client: InfluxDBClient, write_api: WriteApi):
-    """Close clients after terminate a script.
-    :param db_client: InfluxDB client
-    :param write_api: WriteApi
-    :return: nothing
-    """
+def on_exit(db_client, write_api):
     write_api.__del__()
     db_client.__del__()
 
