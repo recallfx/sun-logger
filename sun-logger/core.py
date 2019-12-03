@@ -17,8 +17,8 @@ def retry_decorator(func):
         retry_count = 500
         result = None
 
-        total_count += 1
         while result == None and retry_count > 0:
+            total_count += 1
             try:
                 result = func(*args, **kwargs)
             except Exception as err:
@@ -26,7 +26,7 @@ def retry_decorator(func):
                 retry_count -= 1
                 if retry_count == 0:
                     print(f'Error: {err}')
-                    print(f'Error rate: {error_count/total_count*100}%')
+                    print(f'Error rate: {int(error_count/total_count*100)}%')
         return result
     return wrapper
 
