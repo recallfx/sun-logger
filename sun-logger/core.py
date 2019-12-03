@@ -14,7 +14,7 @@ def retry_decorator(func):
     def wrapper(*args, **kwargs):
         global total_count
         global error_count
-        retry_count = 160
+        retry_count = 500
         result = None
 
         total_count += 1
@@ -27,8 +27,6 @@ def retry_decorator(func):
                 if retry_count == 0:
                     print(f'Error: {err}')
                     print(f'Error rate: {error_count/total_count*100}%')
-                    
-        print()
         return result
     return wrapper
 
@@ -176,7 +174,7 @@ class SunLogger:
         return self.instrument.read_register(32089)
 
     def _format_line(self, measurement, data):
-        p = Point(measurement).tag('location', 'lt').time(int(time.time()))
+        p = Point(measurement).tag('location', 'lt').time(time.time())
 
         for (key, val) in data.items():
             p.field(key, val)
@@ -184,18 +182,18 @@ class SunLogger:
         return p
 
     def log_device(self, **kwargs):
-        line = self._format_line('device', kwargs)
+        p = self._format_line('device', kwargs)
 
-        print(line)
+        print(p.to_line_protocol())
 
-        self.influx_logger.write(line)
+        self.influx_logger.write(p)
 
     def log_electricity(self, **kwargs):
-        line = self._format_line('electricity', kwargs)
+        p = self._format_line('electricity', kwargs)
 
-        print(line)
+        print(p.to_line_protocol())
 
-        self.influx_logger.write(line)
+        self.influx_logger.write(p)
 
     def run(self):
         print('Initialising...')
