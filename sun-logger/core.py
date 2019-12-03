@@ -236,17 +236,30 @@ class SunLogger:
             device_status_string = self.get_device_status_string(
                 self.device_status_code)
             internal_temp = self.get_internal_temp()
-
+                
             if (self.device_status_code != device_status_code):
                 self.device_status_code = device_status_code
                 self.device_status_string = device_status_string
+
+                self.log_electricity(
+                    status_code=self.device_status_code,
+                    status_string=self.device_status_string
+                )
 
                 print(f'Device status: {self.device_status_code} {self.device_status_string}')
 
             if (self.internal_temp != internal_temp):
                 self.internal_temp = internal_temp
 
+                self.log_electricity(
+                    internal_temp=self.internal_temp,
+                )
+
                 print(f'Device temperature: {self.internal_temp}')
+
+            if (0xa000 == device_status_code):
+                sleep(10)
+                continue
 
             pv = {}
 
@@ -282,7 +295,4 @@ class SunLogger:
                 reactive_power=reactive_power,
                 power_factor=power_factor,
                 efficiency=efficiency,
-                internal_temp=self.internal_temp,
-                status_code=self.device_status_code,
-                status_string=self.device_status_string
             )
