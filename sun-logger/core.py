@@ -12,10 +12,6 @@ import functools
 total_count = 0
 error_count = 0
 
-def on_exit(db_client, write_api):
-    write_api.__del__()
-    db_client.__del__()
-
 def retry_decorator(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -53,7 +49,7 @@ class InfluxLogger:
 
         atexit.register(self.on_exit, self.client, self.write_api)
 
-    def on_exit(self, db_client: InfluxDBClient, write_api: WriteApi):
+    def on_exit(self, db_client, write_api):
         write_api.__del__()
         db_client.__del__()
 
